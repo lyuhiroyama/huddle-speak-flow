@@ -56,6 +56,10 @@ const Index = () => {
             {currentUpload && (
               <>
                 <TranscriptionDisplay upload={currentUpload} />
+                {/* Debug: Check if transcription_text exists */}
+                {console.log('Current upload:', currentUpload)}
+                {console.log('Transcription text:', currentUpload.transcription_text)}
+                {console.log('Status:', currentUpload.status)}
                 {currentUpload.transcription_text && (
                   <DubbingPanel uploadId={currentUpload.id} />
                 )}
