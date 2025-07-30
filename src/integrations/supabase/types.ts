@@ -14,7 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      transcriptions: {
+        Row: {
+          created_at: string
+          dubbed_audio_path: string | null
+          filename: string
+          has_dubbing: boolean
+          id: string
+          original_audio_path: string
+          status: string
+          target_language: string | null
+          transcript_text: string | null
+          updated_at: string
+          user_id: string
+          voice_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          dubbed_audio_path?: string | null
+          filename: string
+          has_dubbing?: boolean
+          id?: string
+          original_audio_path: string
+          status?: string
+          target_language?: string | null
+          transcript_text?: string | null
+          updated_at?: string
+          user_id: string
+          voice_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          dubbed_audio_path?: string | null
+          filename?: string
+          has_dubbing?: boolean
+          id?: string
+          original_audio_path?: string
+          status?: string
+          target_language?: string | null
+          transcript_text?: string | null
+          updated_at?: string
+          user_id?: string
+          voice_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
