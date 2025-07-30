@@ -42,7 +42,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
         <div className="container mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold">Huddle Transcriber</h1>
+          <h1 className="text-3xl font-bold">Huddle Transcriber I revoked the API keys already btw. Fun hackathon!</h1>
           <p className="text-muted-foreground mt-2">Upload audio, get transcriptions, and dub to any language</p>
         </div>
       </header>
