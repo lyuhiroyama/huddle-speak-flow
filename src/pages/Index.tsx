@@ -29,6 +29,15 @@ const Index = () => {
     setCurrentUpload(upload);
   };
 
+  const handleDeleteUpload = (uploadId: string) => {
+    // Clear current upload if it was deleted
+    if (currentUpload?.id === uploadId) {
+      setCurrentUpload(null);
+    }
+    // Refresh the history list
+    setRefreshHistory(prev => prev + 1);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
@@ -50,7 +59,7 @@ const Index = () => {
                 {currentUpload.transcription_text && (
                   <DubbingPanel uploadId={currentUpload.id} />
                 )}
-                <AudioPlayback upload={currentUpload} />
+                <AudioPlayback upload={currentUpload} onDeleteUpload={handleDeleteUpload} />
               </>
             )}
           </div>

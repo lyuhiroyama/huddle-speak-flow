@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, Pause, Download, Volume2 } from "lucide-react";
+import { Play, Pause, Download, Volume2, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 interface AudioUpload {
@@ -27,6 +28,7 @@ interface Dubbing {
 
 interface AudioPlaybackProps {
   upload: AudioUpload;
+  onDeleteUpload?: (uploadId: string) => void;
 }
 
 const LANGUAGE_NAMES: { [key: string]: string } = {
@@ -38,10 +40,11 @@ const LANGUAGE_NAMES: { [key: string]: string } = {
   pt: 'Portuguese',
 };
 
-export const AudioPlayback = ({ upload }: AudioPlaybackProps) => {
+export const AudioPlayback = ({ upload, onDeleteUpload }: AudioPlaybackProps) => {
   const [dubbings, setDubbings] = useState<Dubbing[]>([]);
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [audioElements, setAudioElements] = useState<{ [key: string]: HTMLAudioElement }>({});
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchDubbings();
@@ -95,10 +98,74 @@ export const AudioPlayback = ({ upload }: AudioPlaybackProps) => {
     document.body.removeChild(a);
   };
 
+  const handleDeleteDubbing = async (dubbingId: string) => {
+    try {
+      const { error } = await supabase
+        .from('dubbings')
+        .delete()
+        .eq('id', dubbingId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Dubbing deleted",
+        description: "The dubbed audio has been removed.",
+      });
+
+      fetchDubbings(); // Refresh the list
+    } catch (error: any) {
+      toast({
+        title: "Delete failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteUpload = async () => {
+    try {
+      // Delete all dubbings first
+      await supabase
+        .from('dubbings')
+        .delete()
+        .eq('audio_upload_id', upload.id);
+
+      // Delete the upload
+      const { error } = await supabase
+        .from('audio_uploads')
+        .delete()
+        .eq('id', upload.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Upload deleted",
+        description: "The audio file and all its dubbings have been removed.",
+      });
+
+      // Notify parent component
+      onDeleteUpload?.(upload.id);
+    } catch (error: any) {
+      toast({
+        title: "Delete failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Audio Playback</CardTitle>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleDeleteUpload}
+          className="text-destructive hover:text-destructive"
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Original Audio */}
@@ -182,7 +249,26 @@ export const AudioPlayback = ({ upload }: AudioPlaybackProps) => {
                     >
                       <Download className="w-4 h-4" />
                     </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteDubbing(dubbing.id)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
+                )}
+                
+                {dubbing.status === 'processing' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeleteDubbing(dubbing.id)}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                 )}
               </div>
             ))}
