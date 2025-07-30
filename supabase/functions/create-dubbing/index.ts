@@ -60,39 +60,39 @@ serve(async (req) => {
 
     console.log('Created dubbing record:', dubbing.id);
 
-    // Translate the text if needed (for non-English targets)
+    // Always translate the text to the target language
     let textToSpeak = upload.transcription_text;
     
-    if (targetLanguage !== 'en') {
-      const translateResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4.1-2025-04-14',
-          messages: [
-            {
-              role: 'system',
-              content: `Translate the following text to ${getLanguageName(targetLanguage)}. Preserve the tone and meaning while making it sound natural in the target language.`
-            },
-            {
-              role: 'user',
-              content: upload.transcription_text
-            }
-          ],
-          max_tokens: 1000
-        }),
-      });
+    // Auto-detect source language and translate to target language
+    const translateResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4.1-2025-04-14',
+        messages: [
+          {
+            role: 'system',
+            content: `Translate the following text to ${getLanguageName(targetLanguage)}. If the text is already in ${getLanguageName(targetLanguage)}, return it as-is. Preserve the tone and meaning while making it sound natural in the target language.`
+          },
+          {
+            role: 'user',
+            content: upload.transcription_text
+          }
+        ],
+        max_tokens: 1000
+      }),
+    });
 
-      if (translateResponse.ok) {
-        const translateResult = await translateResponse.json();
-        textToSpeak = translateResult.choices[0].message.content;
-        console.log('Translated text:', textToSpeak);
-      } else {
-        console.warn('Translation failed, using original text');
-      }
+    if (translateResponse.ok) {
+      const translateResult = await translateResponse.json();
+      textToSpeak = translateResult.choices[0].message.content;
+      console.log('Translated text:', textToSpeak);
+    } else {
+      console.warn('Translation failed, using original text');
+      textToSpeak = upload.transcription_text;
     }
 
     // Generate speech with ElevenLabs
