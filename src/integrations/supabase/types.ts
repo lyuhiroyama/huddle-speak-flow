@@ -14,6 +14,80 @@ export type Database = {
   }
   public: {
     Tables: {
+      audio_uploads: {
+        Row: {
+          created_at: string
+          duration_seconds: number | null
+          file_size_bytes: number | null
+          filename: string
+          id: string
+          original_audio_url: string
+          status: string
+          transcription_text: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number | null
+          file_size_bytes?: number | null
+          filename: string
+          id?: string
+          original_audio_url: string
+          status?: string
+          transcription_text?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number | null
+          file_size_bytes?: number | null
+          filename?: string
+          id?: string
+          original_audio_url?: string
+          status?: string
+          transcription_text?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      dubbings: {
+        Row: {
+          audio_upload_id: string
+          created_at: string
+          dubbed_audio_url: string | null
+          id: string
+          status: string
+          target_language: string
+          voice_id: string
+        }
+        Insert: {
+          audio_upload_id: string
+          created_at?: string
+          dubbed_audio_url?: string | null
+          id?: string
+          status?: string
+          target_language: string
+          voice_id: string
+        }
+        Update: {
+          audio_upload_id?: string
+          created_at?: string
+          dubbed_audio_url?: string | null
+          id?: string
+          status?: string
+          target_language?: string
+          voice_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dubbings_audio_upload_id_fkey"
+            columns: ["audio_upload_id"]
+            isOneToOne: false
+            referencedRelation: "audio_uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transcriptions: {
         Row: {
           created_at: string

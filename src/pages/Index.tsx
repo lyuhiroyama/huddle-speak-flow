@@ -1,20 +1,71 @@
-import { AuthForm } from "@/components/auth/AuthForm";
-import { Dashboard } from "@/components/dashboard/Dashboard";
-import { useAuth } from "@/hooks/useAuth";
-import { Loader2 } from "lucide-react";
+import { useState } from "react";
+import { UploadPanel } from "@/components/UploadPanel";
+import { TranscriptionDisplay } from "@/components/TranscriptionDisplay";
+import { DubbingPanel } from "@/components/DubbingPanel";
+import { AudioPlayback } from "@/components/AudioPlayback";
+import { RecentHistory } from "@/components/RecentHistory";
+
+interface AudioUpload {
+  id: string;
+  filename: string;
+  original_audio_url: string;
+  transcription_text?: string;
+  status: 'uploading' | 'transcribing' | 'completed' | 'failed';
+  duration_seconds?: number;
+  file_size_bytes?: number;
+  created_at: string;
+}
 
 const Index = () => {
-  const { user, loading } = useAuth();
+  const [currentUpload, setCurrentUpload] = useState<AudioUpload | null>(null);
+  const [refreshHistory, setRefreshHistory] = useState(0);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
-    );
-  }
+  const handleUploadComplete = (upload: AudioUpload) => {
+    setCurrentUpload(upload);
+    setRefreshHistory(prev => prev + 1);
+  };
 
-  return user ? <Dashboard /> : <AuthForm />;
+  const handleSelectFromHistory = (upload: AudioUpload) => {
+    setCurrentUpload(upload);
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border">
+        <div className="container mx-auto px-4 py-6">
+          <h1 className="text-3xl font-bold">Huddle Transcriber</h1>
+          <p className="text-muted-foreground mt-2">Upload audio, get transcriptions, and dub to any language</p>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column - Upload & Controls */}
+          <div className="lg:col-span-2 space-y-6">
+            <UploadPanel onUploadComplete={handleUploadComplete} />
+            
+            {currentUpload && (
+              <>
+                <TranscriptionDisplay upload={currentUpload} />
+                {currentUpload.transcription_text && (
+                  <DubbingPanel uploadId={currentUpload.id} />
+                )}
+                <AudioPlayback upload={currentUpload} />
+              </>
+            )}
+          </div>
+
+          {/* Right Column - Recent History */}
+          <div>
+            <RecentHistory 
+              refreshTrigger={refreshHistory}
+              onSelectUpload={handleSelectFromHistory}
+            />
+          </div>
+        </div>
+      </main>
+    </div>
+  );
 };
 
 export default Index;
